@@ -1,8 +1,9 @@
 import React, { useRef, useEffect } from 'react';
+var Tuio = require("./src/Tuio");
+    Tuio.Client = require("./src/TuioClient");
 var Deque = require("collections/deque");
 
 const Canvas = () => {
-
 
     var client = null,
         screenW = null,
@@ -13,6 +14,13 @@ const Canvas = () => {
         objSize = 50;
 
 
+    let initClient = ()=> {
+        client = new Tuio.Client({
+            host: "ws://localhost:8080"
+        });
+        //client.on("connect", onConnect);
+        client.connect();
+    }
     const canvasRef = useRef(null);
     var deque=new Deque();
     useEffect(() => {
@@ -24,8 +32,8 @@ const Canvas = () => {
         let lastMouseY = 0;
         let mouseSpeed = 0;
 
-        canvas.width = 1024;
-        canvas.height = 768;
+        canvas.width = ;
+        canvas.height = ;
 
         const updateMousePosition = (event) => {
             lastMouseX = mouseX;
