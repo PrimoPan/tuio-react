@@ -1,4 +1,6 @@
 import React, { useRef, useEffect } from 'react';
+import {useWindowSize} from "./src/useWindowSize";
+
 var Tuio = require("./src/Tuio");
     Tuio.Client = require("./src/TuioClient");
 var Deque = require("collections/deque");
@@ -9,8 +11,6 @@ const Canvas = () => {
         screenW = null,
         screenH = null,
         time = null,
-        canvas = null,
-        context = null,
         objSize = 50;
 
 
@@ -22,6 +22,9 @@ const Canvas = () => {
         client.connect();
     }
     const canvasRef = useRef(null);
+    const {width,height} = useWindowSize();
+
+   // console.log(width+'   '+ height)
     var deque=new Deque();
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -32,8 +35,9 @@ const Canvas = () => {
         let lastMouseY = 0;
         let mouseSpeed = 0;
 
-        canvas.width = ;
-        canvas.height = ;
+
+        canvas.width = width;
+        canvas.height = height;
 
         const updateMousePosition = (event) => {
             lastMouseX = mouseX;
@@ -49,12 +53,26 @@ const Canvas = () => {
                 deque.shift();
             deque.push(obj);
         };
-
+        var drawCursor = function(cursor) {
+            ctx.fillStyle = "#009fe3";
+            ctx.beginPath();
+            ctx.arc(
+                cursor.getScreenX(screenW),
+                cursor.getScreenY(screenH),
+                objSize * 0.5,
+                0,
+                Math.PI * 2
+            );
+            ctx.closePath();
+            ctx.fill();
+        }
         const draw = () => {
             let obj=deque.peekBack();
             if (obj) {
+                ctx.fillStyle = "#210029"
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = "#009fe3";
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //    ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.fillText(`Mouse position: (${obj.posX}, ${obj.posY})`, 10, 20);
                 ctx.fillText(`Mouse speed: ${obj.speed.toFixed(2)}`, 10, 40);
 
