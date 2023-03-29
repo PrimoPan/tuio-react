@@ -5,6 +5,13 @@ var Tuio = require("./src/Tuio");
     Tuio.Client = require("./src/TuioClient");
 var Deque = require("collections/deque");
 
+
+document.documentElement.addEventListener('touchstart', function (event) {
+    if (event.touches.length > 1) {
+        event.preventDefault();
+    }
+}, {passive:false});
+
 const Canvas = () => {
 
     var client = null,
