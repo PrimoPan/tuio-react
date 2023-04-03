@@ -1,13 +1,15 @@
 const {KalmanFilter} = require('kalman-filter');
 
+
 const kFilter = new KalmanFilter({
 	observation: {
 		sensorDimension: 2,
 		name: 'sensor'
 	},
 	dynamic: {
-		name: 'constant-position',// observation.sensorDimension == dynamic.dimension
-		covariance: [3, 4]// equivalent to diag([3, 4])
+		name: 'constant-acceleration',// observation.sensorDimension * 3 == state.dimension
+		timeStep: 0.1,
+		covariance: [3, 3, 4, 4, 5, 5]// equivalent to diag([3, 3, 4, 4, 5, 5])
 	}
 });
 let previousCorrected = null;
@@ -37,7 +39,7 @@ obe=[0,3];
 pre(obe);
 obe=[0,4];
 pre(obe);
-obe=[0,5];
+obe=[0,7];
 pre(obe);
-obe=[0,6];
+obe=[0,10];
 pre(obe);
