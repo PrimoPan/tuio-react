@@ -9,7 +9,7 @@ const kFilter = new KalmanFilter({
 	dynamic: {
 		name: 'constant-acceleration',// observation.sensorDimension * 3 == state.dimension
 		timeStep: 0.1,
-		covariance: [3, 3, 4, 4, 5, 5]// equivalent to diag([3, 3, 4, 4, 5, 5])
+		covariance: [1, 1, 4, 5, 1, 4]// equivalent to diag([3, 3, 4, 4, 5, 5])
 	}
 });
 let previousCorrected = null;
@@ -43,3 +43,9 @@ obe=[0,7];
 pre(obe);
 obe=[0,10];
 pre(obe);
+obe=[0.2,7.5]
+pre(obe)
+obe=[0.1,8]
+pre(obe)
+obe=[0,9]
+pre(obe)
