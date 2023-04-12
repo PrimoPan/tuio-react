@@ -5,7 +5,10 @@ var Tuio = require("./src/Tuio");
 Tuio.Client = require("./src/TuioClient");
 
 var Deque = require("collections/deque");
+
+
 var Robj=[];
+var Rcursor=[];
 /*
     Robj stores the tokens's information
  */
@@ -55,13 +58,6 @@ const Canvas = () => {
         let pointers=null;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        let mouseX = 0;
-        let mouseY = 0;
-        let lastMouseX = 0;
-        let lastMouseY = 0;
-        let mouseSpeed = 0;
-
-
         canvas.width = width;
         canvas.height = height;
         let initClient = ()=> {
@@ -124,23 +120,97 @@ const Canvas = () => {
             ctx.fillText(object.symbolId,objSize,objSize);
             ctx.fillText(`pos: (${object.getScreenX(width)},${object.getScreenY(height)})`,objSize,objSize*1.1)
             ctx.fillText(`deltapos=(${object.deltaX},${object.deltaY})  speed=${object.Speed} px/ms`,objSize,objSize*1.2)
-
             ctx.restore();
         };
-
 
         const draw = () =>{
             ctx.fillStyle = "#210029"
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             clearObjects();
+            clearCursors();
             for (let i in Robj)
             {
                 let obj=Robj[i].que.peekBack();
                 drawObject(obj);
             }
-            ctx.fillStyle="#FFFFFF" //background-color
-            //  ctx.fillText(`Cursor Numbers: (${JSON.stringify(objects)})`, 10, 20);
+            for (let i in Rcursor)
+            {
+                let obj=Rcursor[i].que.peekBack();
+                drawCursor(obj);
+            }
+        }
+        const clearCursors = () =>{
+            for (let i in cursors)
+            {
+                let find=false;
+                let id=-1;
+                for (let j in Rcursor)
+                {
+                    if (Rcursor[j].id===i)
+                    {
+                        find=true;
+                        id=j;
+                        break;
+                    }
+                }
+                if (find===false)
+                {
+                    let ee={};
+                    ee.id=i;
+                    ee.que=new Deque();
+                    let OBJ=cursors[i];
+                    OBJ.Time=OBJ.currentTime.seconds*100000+OBJ.currentTime.microSeconds;
+                    OBJ.deltaX=0;
+                    OBJ.deltaY=0;
+                    OBJ.delta=0;
+                    OBJ.deltaTime=0;
+                    OBJ.Speed=0;
+                    OBJ.XSpeed=0;
+                    OBJ.YSpeed=0;
+                    OBJ.deltaAngle=0;
+                    OBJ.AngleSpeed=0;
+                    ee.que.push(OBJ);
+                    ee.cnt=0;
+                    Rcursor.push(ee)
+                }
+                else {
+                    let OBJ=cursors[i];
+                    let LastObj=Rcursor[id].que.peekBack();
+                    let xPos=OBJ.getScreenX(width),
+                        yPos=OBJ.getScreenY(height),
+                        lxPos=LastObj.getScreenX(width),
+                        lyPos=LastObj.getScreenY(height);
+                    OBJ.Time=OBJ.currentTime.seconds*100000+OBJ.currentTime.microSeconds;
+                    let delta=OBJ.Time-LastObj.Time;
+                    if (delta===0) break;
+                    OBJ.deltaX=xPos-lxPos;
+                    OBJ.deltaY=yPos-lyPos;
+                    OBJ.deltaAngle=OBJ.angle-LastObj.angle;
+                    OBJ.deltaTime=delta;
+                    OBJ.XSpeed=OBJ.deltaX/delta;
+                    OBJ.YSpeed=OBJ.deltaY/delta;
+                    OBJ.Speed= Math.sqrt(OBJ.deltaX*OBJ.deltaX+OBJ.deltaY*OBJ.deltaY)/delta;
+                    OBJ.AngleSpeed = OBJ.deltaAngle/delta;
+                    Rcursor[id].que.push(OBJ)
+                    Rcursor[id].cnt=0;
+                    if (Rcursor[id].que.length>=60)
+                        Rcursor[id].que.shift();
+                }
 
+            for (let i in Rcursor)
+            {
+                let find=false;
+                for (let j in cursors)
+                {
+                    if (Rcursor[i].id===j)
+                        find=true;
+                }
+                if (!find)
+                    Rcursor[i].cnt++;
+                if (Rcursor[i].cnt>=20)
+                    Rcursor.splice(Rcursor[i]);
+                }
+            }
         }
         const clearObjects = () => {
             for (let i in objects) {
@@ -161,15 +231,13 @@ const Canvas = () => {
                     ee.id=i;
                     ee.que=new Deque();
                     let OBJ=objects[i];
-
-                    OBJ.Time=Date.now();
+                    OBJ.Time=OBJ.currentTime.seconds*100000+OBJ.currentTime.microSeconds;
                     OBJ.deltaX=0;
                     OBJ.deltaY=0;
                     OBJ.delta=0;
                     OBJ.deltaTime=0;
                     OBJ.Speed=0;
                     OBJ.XSpeed=0;
-
                     OBJ.YSpeed=0;
                     OBJ.deltaAngle=0;
                     OBJ.AngleSpeed=0;
@@ -184,10 +252,9 @@ const Canvas = () => {
                         yPos=OBJ.getScreenY(height),
                         lxPos=LastObj.getScreenX(width),
                         lyPos=LastObj.getScreenY(height);
-                    OBJ.Time=Date.now();
+                    OBJ.Time=OBJ.currentTime.seconds*100000+OBJ.currentTime.microSeconds;
                     let delta=OBJ.Time-LastObj.Time;
                     if (delta===0) break;
-                    console.log("OBJ.time: ",OBJ.Time,"   ","Lastobj.time",LastObj.Time);
                     OBJ.deltaX=xPos-lxPos;
                     OBJ.deltaY=yPos-lyPos;
                     OBJ.deltaAngle=OBJ.angle-LastObj.angle;
@@ -215,38 +282,24 @@ const Canvas = () => {
                 if (Robj[i].cnt>=20)
                     Robj.splice(Robj[i]);
             }
-
-            for (let i in Robj)
-            {
-                let obj=Robj[i].que.peekBack();
-                drawObject(obj);
-            }
         }
         const collectData = () => {
-
             cursors = client.getTuioCursors();
             pointers = client.getTuioPointers();
             objects = client.getTuioObjects();
-            /* for (var i in cursors) {
-                 drawCursor(cursors[i]);
-             }*/
             clearObjects();
+            clearCursors();
             draw();
             setTimeout(()=>{
                 requestAnimationFrame(collectData);
             },1000/60)
 
         };
-
-        //      canvas.addEventListener('mousemove', updateMousePosition);
-        // draw();
         initClient();
-
         return () => {
         };
     }, []);
     const debug= event =>{
-
     }
     return <canvas tabIndex={0} ref={canvasRef} onKeyDown={debug}/>;
 };
