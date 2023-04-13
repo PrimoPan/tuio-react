@@ -12,7 +12,7 @@ var Rcursor=[];
 /*
     Robj stores the tokens's information
  */
-
+let del=[];
 
 document.documentElement.addEventListener('touchstart', function (event) {
     if (event.touches.length > 1) {
@@ -44,6 +44,7 @@ document.documentElement.addEventListener('touchstart', function (event) {
             clearTimeout(id);
         };
 }())
+let precur=[];
 const Canvas = () => {
 
     let client = null,
@@ -73,7 +74,7 @@ const Canvas = () => {
             ctx.arc(
                 cursor.getScreenX(width),
                 cursor.getScreenY(height),
-                objSize * 0.5,
+                50 * 0.5,
                 0,
                 Math.PI * 2
             );
@@ -124,6 +125,7 @@ const Canvas = () => {
         };
 
         const draw = () =>{
+         //   console.log(cursors)
             ctx.fillStyle = "#210029"
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             clearObjects();
@@ -136,17 +138,29 @@ const Canvas = () => {
             for (let i in Rcursor)
             {
                 let obj=Rcursor[i].que.peekBack();
-                drawCursor(obj);
+                drawCursor(obj)
             }
         }
         const clearCursors = () =>{
+            for (let i in del){
+                for (let j in cursors)
+                    if (cursors[j]!=null)
+                    if (cursors[j].sessionId===del[i])
+                        cursors[j]=null;
+                for (let j in Rcursor)
+                        if (Rcursor[j].sessionId)
+                             if (Rcursor[j].sessionId===del[i])
+                        Rcursor.splice(Rcursor[j])
+            }
             for (let i in cursors)
             {
+                if (cursors[i]===null)
+                    continue;
                 let find=false;
                 let id=-1;
                 for (let j in Rcursor)
                 {
-                    if (Rcursor[j].id===i)
+                    if (cursors[i].sessionId===Rcursor[j].sessionId)
                     {
                         find=true;
                         id=j;
@@ -156,59 +170,50 @@ const Canvas = () => {
                 if (find===false)
                 {
                     let ee={};
-                    ee.id=i;
                     ee.que=new Deque();
-                    let OBJ=cursors[i];
+                    let OBJ={};
+                    OBJ.xPos=cursors[i].getScreenX(width)
+                    OBJ.yPos=cursors[i].getScreenY(height)
                     OBJ.Time=OBJ.currentTime.seconds*100000+OBJ.currentTime.microSeconds;
-                    OBJ.deltaX=0;
-                    OBJ.deltaY=0;
-                    OBJ.delta=0;
-                    OBJ.deltaTime=0;
-                    OBJ.Speed=0;
-                    OBJ.XSpeed=0;
-                    OBJ.YSpeed=0;
-                    OBJ.deltaAngle=0;
-                    OBJ.AngleSpeed=0;
                     ee.que.push(OBJ);
                     ee.cnt=0;
-                    Rcursor.push(ee)
+                    ee.sessionId=cursors[i].sessionId;
+                    Rcursor.push(ee);
                 }
                 else {
-                    let OBJ=cursors[i];
-                    let LastObj=Rcursor[id].que.peekBack();
-                    let xPos=OBJ.getScreenX(width),
-                        yPos=OBJ.getScreenY(height),
-                        lxPos=LastObj.getScreenX(width),
-                        lyPos=LastObj.getScreenY(height);
+                    let OBJ={};
+                    OBJ.xPos=cursors[i].getScreenX(width)
+                    OBJ.yPos=cursors[i].getScreenY(height)
                     OBJ.Time=OBJ.currentTime.seconds*100000+OBJ.currentTime.microSeconds;
-                    let delta=OBJ.Time-LastObj.Time;
-                    if (delta===0) break;
-                    OBJ.deltaX=xPos-lxPos;
-                    OBJ.deltaY=yPos-lyPos;
-                    OBJ.deltaAngle=OBJ.angle-LastObj.angle;
-                    OBJ.deltaTime=delta;
-                    OBJ.XSpeed=OBJ.deltaX/delta;
-                    OBJ.YSpeed=OBJ.deltaY/delta;
-                    OBJ.Speed= Math.sqrt(OBJ.deltaX*OBJ.deltaX+OBJ.deltaY*OBJ.deltaY)/delta;
-                    OBJ.AngleSpeed = OBJ.deltaAngle/delta;
+                   // if (delta===0) break;
                     Rcursor[id].que.push(OBJ)
                     Rcursor[id].cnt=0;
-                    if (Rcursor[id].que.length>=60)
+                    if (Rcursor[id].que.length>60)
                         Rcursor[id].que.shift();
                 }
 
-            for (let i in Rcursor)
-            {
-                let find=false;
-                for (let j in cursors)
+                for (let i in Rcursor)
                 {
-                    if (Rcursor[i].id===j)
-                        find=true;
-                }
-                if (!find)
-                    Rcursor[i].cnt++;
-                if (Rcursor[i].cnt>=20)
-                    Rcursor.splice(Rcursor[i]);
+                    let find=false;
+                    for (let j in cursors)
+                    {
+                        if (Rcursor[i].sessionId===cursors[j].sessionId)
+                            find=true;
+                    }
+                    if (!find)
+                        Rcursor[i].cnt++;
+                    if (Rcursor[i].cnt>20) {
+                        console.log(Rcursor[i].cnt)
+                        Rcursor.splice(Rcursor[i]);
+                        continue;
+                    }
+                    if (Rcursor[i].que.length>=58)
+                    {
+                        let st=Rcursor[i].que.peek();
+                        let ed=Rcursor[i].que.peekBack();
+                        if (st.xPos===ed.yPos && st.xPos===ed.yPos )
+                            del.push(Rcursor[i].sessionId);
+                    }
                 }
             }
         }
@@ -287,6 +292,7 @@ const Canvas = () => {
             cursors = client.getTuioCursors();
             pointers = client.getTuioPointers();
             objects = client.getTuioObjects();
+
             clearObjects();
             clearCursors();
             draw();
