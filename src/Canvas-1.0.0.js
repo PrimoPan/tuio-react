@@ -312,5 +312,5 @@ const Canvas = () => {
 
 export default Canvas;
 /*
-    quit drinking for 3days
+    quit drinking for 4days
  */
