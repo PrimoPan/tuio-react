@@ -4,7 +4,7 @@
 tensorflowjs_converter  --input_format=keras_saved_model  ./my_model  ./web_model
     
 
-terminal: http-server -c1 --cors . -p 1234
+terminal: http-server -c1 --cors . -p 1234 （8080和tuio信号接口冲突）
 */
 var Tuio = require("../../src/Tuio");
 Tuio.Client = require("../../src/TuioClient");
@@ -32,6 +32,7 @@ let positions=[]
 
 const tf = require('@tensorflow/tfjs');
 const MODEL_URL = 'http://127.0.0.1:1234/model.json';
+
 let model;
 async function loadmodel() {
 
