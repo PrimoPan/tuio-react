@@ -6,6 +6,8 @@ tensorflowjs_converter  --input_format=keras_saved_model  ./my_model  ./web_mode
 
 terminal: http-server -c1 --cors . -p 1234 （8080和tuio信号接口冲突）
 */
+
+
 var Tuio = require("../../src/Tuio");
 Tuio.Client = require("../../src/TuioClient");
 
@@ -52,16 +54,7 @@ Predict=(A)=>
     let md=tf.tensor3d(
         [A]
     )
-
-        let s = model.predict(md).arraySync()
-       /* B = [];
-        for (let j = 0; j < 29; j++)
-            B[j] = A[j + 1];
-        B[29]=s[0];
-        A=B;
-        md=tf.tensor3d([A])
-
-    }*/
+    let s = model.predict(md).arraySync()
     return s[0]
 }
 
@@ -119,13 +112,13 @@ TuioCanvas.Main = (function() {
                // console.log(objects[i].xPos," ",objects[i].yPos," ",objects[i].symbolId)
                 let dt=new Date().getTime()
                 positions.push({'id':cnt,'x':objects[i].xPos,'y':objects[i].yPos,'time':dt,'angle':objects[i].angle})
-
+                let len=20
                if (model && cnt>=40){
                     let A=[]
-                    for (let j=cnt-20+1;j<=cnt;j++)
+                    for (let j=cnt-len+1;j<=cnt;j++)
                     {
 
-                        A[j-(cnt-20+1)]=[positions[j].x,positions[j].y]
+                        A[j-(cnt-len+1)]=[positions[j].x,positions[j].y]
 
 
                     }
