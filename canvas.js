@@ -5,6 +5,8 @@ tensorflowjs_converter  --input_format=keras_saved_model  ./my_model  ./web_mode
     
 
 terminal: http-server -c1 --cors . -p 1234 （8080和tuio信号接口冲突）
+
+4k屏幕 10帧预测5帧
 */
 
 
