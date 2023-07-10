@@ -35,6 +35,22 @@ document.documentElement.addEventListener('touchstart', function (event) {
 let positions=[]
 
 const tf = require('@tensorflow/tfjs');
+
+
+const fs = require('fs');
+
+// Load the scaler object
+const scaler = JSON.parse(fs.readFileSync('scaler.json', 'utf8'));
+const loadedScaler = tf.keras.preprocessing.minmaxScaling();
+loadedScaler.fromConfig(scaler);
+
+// Normalize new_data
+const new_data_normalized = loadedScaler.transform(new_data);
+const new_data_normalized_reshaped = tf.tensor(new_data_normalized).reshape([1, new_data_normalized.length]);
+
+const predictions = model.predict(new_data_normalized_reshaped);
+
+
 const MODEL_URL = 'http://127.0.0.1:1234/model.json';
 
 let model;
